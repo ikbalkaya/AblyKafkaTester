@@ -9,20 +9,20 @@ import java.util.*
 fun main(args: Array<String>) = runBlocking {
     //trySendingMessages()
     val scope = CoroutineScope(Dispatchers.Default)
-    scope.launch { listen() }
-    produce()
+    scope.launch { listen("topic1") }
+    produce("topic1", "Message", "key1", 500)
     delay(20000)
 }
 
-fun listen() {
+fun listen(channelName:String) {
     val realtime = AblyRealtime("Lo4Cmg.BxYJqg:vnDrnPjyz6c0EDdyHeQbA--rv5xAf8KfDa_iv8hg194")
-    realtime.channels.get("topic1").subscribe {
+    realtime.channels.get(channelName).subscribe {
         val message = it.data as ByteArray
         println("Received message: ${it.name} ${message.toString(Charsets.UTF_8)}")
     }
 }
 
-private suspend fun produce() {
+private suspend fun produce(topic: String, key: String, messagePrefix: String, delay: Long) {
 
     val props = Properties()
     props.put("bootstrap.servers", "0.0.0.0:29092")
@@ -31,8 +31,8 @@ private suspend fun produce() {
     val producer = KafkaProducer<String, String>(props)
     try {
         for (i in 1..10) {
-            delay(1000)
-            val record = ProducerRecord("topic1", "key", "Message $i")
+            delay(delay)
+            val record = ProducerRecord(topic, key, "$messagePrefix $i")
             producer.send(record)
             println("Sent message: ${record.value()}")
         }
@@ -42,7 +42,6 @@ private suspend fun produce() {
         producer.close()
     }
 }
-
 private fun trySendingMessages(){
     val realtime = AblyRealtime("Lo4Cmg.BxYJqg:vnDrnPjyz6c0EDdyHeQbA--rv5xAf8KfDa_iv8hg194")
     for (i in 1..10) {
