@@ -50,7 +50,6 @@ class SimpleProducerTest {
             var message2Index = 0
             listenToMessages(listOf(topicName,topicName2)).collectIndexed { index, value ->
                 val message = value.data as ByteArray
-                println("Message name: ${value.name}")
                 val messageString = message.toString(Charsets.UTF_8)
                 if (value.name == messageName) {
                     assertEquals(messageAtIndex(message1Index, messagePrefix), messageString)
