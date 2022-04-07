@@ -1,80 +1,81 @@
-import io.ably.lib.realtime.AblyRealtime
-import io.ably.lib.types.Message
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectIndexed
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import java.util.*
 import kotlin.test.assertEquals
 
 class SimpleProducerTest {
     @Test
-    fun testSimpleProducer() = runBlocking {
+    fun testProducerSentMessagesReceivedExactlyInTheSameOrder() = runBlocking {
         val messagePrefix = "Hi there"
-        val messageCount = 9
-      //  val scope = CoroutineScope(Dispatchers.Default)
+        val messageCount = 90
+        val topicName = "topic1"
+        val delay = 50L
         val job = launch {
-            listen("topic1").collectIndexed { index, value ->
+            listenToMessages(listOf(topicName)).collectIndexed { index, value ->
                 val message = value.data as ByteArray
 
                 val messageString = message.toString(Charsets.UTF_8)
-
                 assertEquals(messageAtIndex(index, messagePrefix), messageString)
                 if (index == messageCount - 1) {
                     println("All messages received")
-                   cancel()
+                    cancel()
                 }
             }
         }
+        launch {
+            delay(1000) //delay to allow subscriber to catch up
+            produce(topicName, "myKey", messagePrefix, messageCount, delay)
+        }
 
-        produce("topic1", "myKey", messagePrefix, messageCount, 500)
         job.join()
     }
 
+    //sent messages in 2 parallel channels and make sure they are independently received in their same order
+    @Test
+    fun testParallelSentMessagesSentToTwoDifferntTopicsReceivedInParallelOrder() = runBlocking {
+        val messagePrefix = "First message"
+        val messagePrefix2 = "Second message"
+        val messageCount = 90
+        val topicName = "topic1"
+        val topicName2 = "topic2"
+        val messageName = "${topicName}_message"
+        val messageName2 = "${topicName2}_message"
 
-    fun listen(channelName: String): Flow<Message> {
-        val realtime = AblyRealtime("Lo4Cmg.BxYJqg:vnDrnPjyz6c0EDdyHeQbA--rv5xAf8KfDa_iv8hg194")
-        return callbackFlow {
-            realtime.channels.get(channelName).subscribe {
-                trySend(it)
+        val delay = 50L
+        val job = launch {
+            var message1Index = 0
+            var message2Index = 0
+            listenToMessages(listOf(topicName,topicName2)).collectIndexed { index, value ->
+                val message = value.data as ByteArray
+                println("Message name: ${value.name}")
+                val messageString = message.toString(Charsets.UTF_8)
+                if (value.name == messageName) {
+                    assertEquals(messageAtIndex(message1Index, messagePrefix), messageString)
+                    message1Index++
+                } else if (value.name == messageName2) {
+                    assertEquals(messageAtIndex(message2Index, messagePrefix2), messageString)
+                    message2Index++
+                }
+                if (index == messageCount - 1) {
+                    println("All messages received")
+                    cancel()
+                }
             }
-            awaitClose { cancel() }
         }
-    }
-
-    fun messageAtIndex(index: Int, messagePrefix: String): String {
-        return "$messagePrefix $index"
-    }
-
-    private suspend fun produce(
-        topic: String,
-        key: String,
-        messagePrefix: String,
-        messageCount: Int,
-        delay: Long
-    ) {
-
-        val props = Properties()
-        props.put("bootstrap.servers", "0.0.0.0:29092")
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-        val producer = KafkaProducer<String, String>(props)
-        try {
-            for (i in 0..messageCount) {
-                delay(delay)
-                val message = messageAtIndex(i, messagePrefix)
-                val record = ProducerRecord(topic, key, message)
-                producer.send(record)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            producer.close()
+        launch {
+            delay(1000) //delay to allow subscriber to catch up
+            produce(topicName, "myKey", messagePrefix, messageCount, delay)
         }
+        launch {
+            delay(900) //delay to allow subscriber to catch up
+            produce(topicName2, "myKey", messagePrefix2, messageCount, delay)
+        }
+
+        job.join()
     }
+
 
 }
