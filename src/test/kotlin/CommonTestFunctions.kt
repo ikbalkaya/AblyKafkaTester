@@ -11,7 +11,8 @@ import java.util.*
 
 suspend fun produce(
     topic: String,
-    key: String,
+    key: String? = null,
+    partition:Int = 0,
     messagePrefix: String,
     messageCount: Int,
     delay: Long
@@ -26,7 +27,8 @@ suspend fun produce(
         for (i in 0..messageCount) {
             delay(delay)
             val message = messageAtIndex(i, messagePrefix)
-            val record = ProducerRecord(topic, key, message)
+            val record = ProducerRecord(topic, partition, key, message)
+         //   val record = ProducerRecord(topic, key, message)
             producer.send(record)
         }
     } catch (e: Exception) {
