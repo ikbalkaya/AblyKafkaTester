@@ -1,5 +1,7 @@
 import io.ably.lib.realtime.AblyRealtime
+import io.ably.lib.types.ChannelOptions
 import io.ably.lib.types.Message
+import io.ably.lib.util.Crypto
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
@@ -7,7 +9,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 import java.util.*
+import javax.crypto.KeyGenerator
+
 
 suspend fun produce(
     topic: String,
@@ -28,7 +35,7 @@ suspend fun produce(
             delay(delay)
             val message = messageAtIndex(i, messagePrefix)
             val record = ProducerRecord(topic, partition, key, message)
-         //   val record = ProducerRecord(topic, key, message)
+         //  println("Producing $message")
             producer.send(record)
         }
     } catch (e: Exception) {
@@ -46,10 +53,41 @@ fun listenToMessages(channelNames :List<String>): Flow<Message> {
     val realtime = AblyRealtime("Lo4Cmg.BxYJqg:vnDrnPjyz6c0EDdyHeQbA--rv5xAf8KfDa_iv8hg194")
     return callbackFlow {
         channelNames.forEach { channelName ->
-            realtime.channels.get(channelName).subscribe {
+            val channelOptions = ChannelOptions()
+            channelOptions.encrypted = true
+            channelOptions.cipherParams
+
+            val base64Key = encryptionKey(channelName)
+            val key = Base64.getDecoder().decode(base64Key)
+            val params = Crypto.getDefaultParams(key)
+
+            /* create a channel */
+
+            /* create a channel */
+            val channelOpts: ChannelOptions = object : ChannelOptions() {
+                init {
+                    encrypted = true
+                    cipherParams = params
+                }
+            }
+
+            realtime.channels.get(channelName,channelOpts).subscribe {
+                val message = it.data as ByteArray
+                println("Received message: ${it.name} ${message.toString(Charsets.UTF_8)}")
                 trySend(it)
             }
         }
         awaitClose { cancel() }
     }
+}
+
+fun encryptionKey(channelName: String): String? {
+    try {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hash = digest.digest(channelName.byteInputStream(StandardCharsets.UTF_8).readBytes())
+        return Base64.getEncoder().encodeToString(hash)
+    } catch (e: NoSuchAlgorithmException) {
+        e.printStackTrace()
+    }
+    return null
 }

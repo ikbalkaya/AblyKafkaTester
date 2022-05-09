@@ -14,6 +14,7 @@ fun main(args: Array<String>) = runBlocking {
     delay(20000)
 }
 
+
 fun listen(channelName:String) {
     val realtime = AblyRealtime("Lo4Cmg.BxYJqg:vnDrnPjyz6c0EDdyHeQbA--rv5xAf8KfDa_iv8hg194")
     realtime.channels.get(channelName).subscribe {
@@ -40,20 +41,5 @@ private suspend fun produce(topic: String, key: String, messagePrefix: String, d
         e.printStackTrace()
     } finally {
         producer.close()
-    }
-}
-private fun trySendingMessages(){
-    val realtime = AblyRealtime("Lo4Cmg.BxYJqg:vnDrnPjyz6c0EDdyHeQbA--rv5xAf8KfDa_iv8hg194")
-    for (i in 1..10) {
-        val message = "Message $i"
-        realtime.channels.get("topic1").publish("topic1",message, object : CompletionListener {
-            override fun onSuccess() {
-                println("Sent message: $message")
-            }
-
-            override fun onError(p0: ErrorInfo?) {
-                println("Error sending message: $message ${p0?.message}")
-            }
-        })
     }
 }
