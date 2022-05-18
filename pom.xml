@@ -23,6 +23,10 @@
             <id>mavenCentral</id>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
+        <repository>
+            <id>confluent</id>
+            <url>http://packages.confluent.io/maven/</url>
+        </repository>
     </repositories>
 
     <build>
@@ -139,6 +143,34 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.avro/avro -->
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-schema-registry</artifactId>
+            <version>3.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-avro-serializer</artifactId>
+            <version>3.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-streams-avro-serde</artifactId>
+            <version>3.3.1</version>
         </dependency>
     </dependencies>
 

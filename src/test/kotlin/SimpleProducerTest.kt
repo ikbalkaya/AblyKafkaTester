@@ -4,11 +4,15 @@ import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import java.io.File
 import kotlin.test.assertEquals
 
 class SimpleProducerTest {
     @Test
     fun testProducerSentMessagesReceivedExactlyInTheSameOrder() = runBlocking {
+        val schemaContent = SimpleProducerTest::class.java.getResource("/jago_schema.json").readText()
+
+
         val messagePrefix = "Hi there x"
         val messageCount = 10
         val topicName = "topic1"
@@ -27,7 +31,11 @@ class SimpleProducerTest {
         }
         launch {
             delay(1000) //delay to allow subscriber to catch up
-            produce(topic = topicName, messagePrefix = messagePrefix, messageCount = messageCount, delay = delay)
+            produce(topic = topicName,
+                messagePrefix = messagePrefix,
+                messageCount = messageCount,
+                delay = delay,
+            schemaContent = schemaContent)
         }
 
         job.join()

@@ -19,7 +19,8 @@ fun listen(channelName:String) {
     val realtime = AblyRealtime("Lo4Cmg.BxYJqg:vnDrnPjyz6c0EDdyHeQbA--rv5xAf8KfDa_iv8hg194")
     realtime.channels.get(channelName).subscribe {
         val message = it.data as ByteArray
-        println("Received message: ${it.name} ${message.toString(Charsets.UTF_8)}")
+        val messageString = message.toString(Charsets.UTF_8)
+        println("Received message name: ${it.name} data: $messageString")
     }
 }
 
