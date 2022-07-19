@@ -1,3 +1,5 @@
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import io.ably.lib.realtime.AblyRealtime
 import io.ably.lib.types.ChannelOptions
 import io.ably.lib.types.Message
@@ -9,10 +11,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import org.apache.avro.Schema
-import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
+import org.apache.avro.reflect.ReflectData
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -39,13 +42,13 @@ suspend fun produce(
         for (i in 0..messageCount) {
             delay(delay)
             val message = messageAtIndex(i, messagePrefix)
-            val record:ProducerRecord<Any,Any> = ProducerRecord(topic, partition, key, message)
+          //  val record:ProducerRecord<Any,Any> = ProducerRecord(topic, partition, key, message)
          //  println("Producing $message")
             schemaContent?.let {
                 val schematicRecord = createRecordWithSchema(it,key,topic,message, schemaUrl = "http://0.0.0.0:8081")
                 producer.send(schematicRecord)
             }?: run {
-                producer.send(record)
+            //    producer.send(record)
             }
         }
     } catch (e: Exception) {
@@ -70,10 +73,7 @@ fun listenToMessages(channelNames :List<String>): Flow<Message> {
             val base64Key = encryptionKey(channelName)
             val key = Base64.getDecoder().decode(base64Key)
             val params = Crypto.getDefaultParams(key)
-
-            /* create a channel */
-
-            /* create a channel */
+            
             val channelOpts: ChannelOptions = object : ChannelOptions() {
                 init {
                     encrypted = true
@@ -82,8 +82,13 @@ fun listenToMessages(channelNames :List<String>): Flow<Message> {
             }
 
             realtime.channels.get(channelName/*,channelOpts*/).subscribe {
-                val message = it.data as ByteArray
-                println("Received message: ${it.name} ${message.toString(Charsets.UTF_8)}")
+                if (it.data is ByteArray) {
+                    val message = it.data as ByteArray
+                    println("Received message: ${it.name} ${message.toString(Charsets.UTF_8)}")
+                }else if (it.data is JsonObject) {
+                    val message = it.data as JsonObject
+                    println("Received message: ${it.name} $message")
+                }
                 trySend(it)
             }
         }
@@ -93,6 +98,7 @@ fun listenToMessages(channelNames :List<String>): Flow<Message> {
 
 fun encryptMessage(key: String,message:String): String {
     val params = Crypto.getDefaultParams(encryptionKey(key))
+    
     val cipherSet  = Crypto.createChannelCipherSet(params)
     val encrypted = cipherSet.encipher.encrypt(message.toByteArray(Charsets.UTF_8))
     return Base64.getEncoder().encodeToString(encrypted)
@@ -112,22 +118,58 @@ fun encryptionKey(channelName: String): String? {
 
 fun createRecordWithSchema(schemaContent:String,key: String?,topic: String,message: String,schemaUrl:String): ProducerRecord<Any, Any> {
     val parser: Schema.Parser = Schema.Parser()
-    val schema: Schema = parser.parse(schemaContent)
-    registerSchema(schema,schemaUrl, subject = "$topic-value")
-    val avroRecord: GenericRecord = GenericData.Record(schema)
+    
+    val schema = ReflectData.get().getSchema(Garage::class.java)
+    
+    registerSchema(schema,schemaUrl, subject = "$topic-complex")
+   // val avroRecord: GenericRecord = GenericData.Record(schema)
+  
+
+  //  buildSimpleRecord(avroRecord, message)
+   val avroRecord = buildComplexRecord(schema)
+    val producerRecord = ProducerRecord<Any,Any>(topic,key,avroRecord,)
+    val record = ProducerRecord<Any, Any>(topic, key, avroRecord)
+    return record
+}
+
+private fun buildComplexRecord( schema:Schema):GenericRecord {
+    val garage = createGarage()
+   
+    val garageJson = Gson().toJson(garage)
+    
+    val avroConverter = JsonAvroConverter();
+    
+    val record = avroConverter.convertToGenericDataRecord(garageJson.toByteArray(Charsets.UTF_8),schema)
+    return record
+}
+
+private fun buildSimpleRecord(avroRecord: GenericRecord, message: String) {
     avroRecord.put("cardId", message)
     avroRecord.put("pocketId", message)
     avroRecord.put("cvv", message)
     avroRecord.put("limit", 1000)
-
-
-    val record = ProducerRecord<Any, Any>(topic, key, avroRecord)
-    return record
 }
 
 fun registerSchema(schema: Schema, schemaUrl: String, subject:String = "schemas") {
 
     val client = CachedSchemaRegistryClient(schemaUrl, 20)
-
+    
     client.register(subject, schema)
+}
+
+data class Garage(val cars: List<Car>)
+data class Car(val engine: Engine, val parts: List<Part>)
+object Engine
+data class Part(val name: String, val price: Int)
+
+fun createGarage(): Garage {
+    val part = Part("wheel", 100)
+    val part2 = Part("door", 200)
+    val part3 = Part("seat", 300)
+
+    val car1 = Car(Engine, listOf(part, part2, part3))
+    val car2 = Car(Engine, listOf(part, part2, part3))
+
+    return Garage(listOf(car1, car2))
+
 }

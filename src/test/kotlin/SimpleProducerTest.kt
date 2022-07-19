@@ -1,3 +1,4 @@
+import com.google.gson.Gson
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectIndexed
@@ -10,19 +11,22 @@ import kotlin.test.assertEquals
 class SimpleProducerTest {
     @Test
     fun testProducerSentMessagesReceivedExactlyInTheSameOrder() = runBlocking {
-        val schemaContent = SimpleProducerTest::class.java.getResource("/jago_schema.json").readText()
+        val schemaContent = SimpleProducerTest::class.java.getResource("/garage_schema.json").readText()
 
-
+        val json = Gson().toJson(createGarage())
+        println(json)
         val messagePrefix = "Hi there x"
         val messageCount = 10
-        val topicName = "topic1"
+        val topicName = "topic2"
         val delay = 100L
         val job = launch {
             listenToMessages(listOf(topicName)).collectIndexed { index, value ->
-                val message = value.data as ByteArray
-
-                val messageString = message.toString(Charsets.UTF_8)
-               // assertEquals(messageAtIndex(index, messagePrefix), messageString)
+              /* val message = value.data as ByteArray
+              
+                val messageString = message.toString(Charsets.UTF_8)*/
+                println(Gson().toJson(value))
+                println(value.data)
+             //  assertEquals(messageAtIndex(index, messagePrefix), messageString)
                 if (index == messageCount - 1) {
                     println("All messages received")
                     cancel()
@@ -90,5 +94,5 @@ class SimpleProducerTest {
         job.join()
     }
 
-
+  
 }

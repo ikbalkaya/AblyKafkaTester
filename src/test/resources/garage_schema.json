@@ -1,0 +1,79 @@
+{
+  "name": "Garage",
+  "type": "record",
+  "namespace": "com.acme.avro",
+  "fields": [
+    {
+      "name": "cars",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "cars_record",
+          "type": "record",
+          "fields": [
+            {
+              "name": "engine",
+              "type": {
+                "name": "engine",
+                "type": "record",
+                "fields": []
+              }
+            },
+            {
+              "name": "parts",
+              "type": {
+                "type": "array",
+                "items": [
+                  [
+                    {
+                      "name": "parts_record",
+                      "type": "record",
+                      "fields": [
+                        {
+                          "name": "name",
+                          "type": "string"
+                        },
+                        {
+                          "name": "price",
+                          "type": "int"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "parts_record",
+                      "type": "record",
+                      "fields": [
+                        {
+                          "name": "name",
+                          "type": "string"
+                        },
+                        {
+                          "name": "price",
+                          "type": "int"
+                        }
+                      ]
+                    }
+                  ],
+                  {
+                    "name": "parts_record",
+                    "type": "record",
+                    "fields": [
+                      {
+                        "name": "name",
+                        "type": "string"
+                      },
+                      {
+                        "name": "price",
+                        "type": "int"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
