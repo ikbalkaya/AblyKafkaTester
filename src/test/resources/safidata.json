@@ -1,0 +1,43 @@
+ {
+      "state": "ACTIVE",
+      "createdAt": "2022-09-06T08:30:30.993Z",
+      "id": "65fe5342-2bc0-4955-9def-5ea513dc5bb7",
+      "mainAccount": {
+        "ph.safibank.avro.account.MainAccountAvro": {
+          "accountNumber": "0358335065",
+          "balances": {
+            "available": {
+              "amount": "30111.4634",
+              "currency": "PHP",
+              "latestChange": {
+                "string": "2022-09-13T07:26:34.912Z"
+              }
+            },
+            "interest": {
+              "amount": "0.16651",
+              "currency": "PHP",
+              "latestChange": {
+                "string": "2022-09-15T01:00:00.000Z"
+              }
+            },
+            "overdraft": {
+              "amount": "0",
+              "currency": "PHP",
+              "latestChange": null
+            },
+            "total": {
+              "amount": "30111.4634",
+              "currency": "PHP",
+              "latestChange": {
+                "string": "2022-09-13T07:26:34.912Z"
+              }
+            }
+          },
+          "interestRate": "0.001"
+        }
+      },
+      "name": "Jakub Jose Kacur",
+      "ownerId": "82b5aeab-539c-4db5-95e8-7cbbcd5a49ba",
+      "savingAccount": null,
+      "updatedAt": "2022-09-06T08:30:30.993Z"
+    }

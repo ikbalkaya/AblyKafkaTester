@@ -1,0 +1,15 @@
+{
+  "fields": [
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "balance",
+      "type": "int"
+    }
+  ],
+  "name": "AccountUpdated",
+  "namespace": "com.safi.accountUpdated.v1",
+  "type": "record"
+}

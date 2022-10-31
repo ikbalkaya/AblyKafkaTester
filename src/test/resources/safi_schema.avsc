@@ -1,0 +1,206 @@
+{
+  "fields": [
+    {
+      "name": "state",
+      "type": {
+        "name": "AccountStateAvro",
+        "symbols": [
+          "ACTIVE",
+          "INACTIVE",
+          "CLOSED"
+        ],
+        "type": "enum"
+      }
+    },
+    {
+      "name": "createdAt",
+      "type": "string"
+    },
+    {
+      "name": "id",
+      "type": {
+        "logicalType": "UUID",
+        "type": "string"
+      }
+    },
+    {
+      "name": "mainAccount",
+      "type": [
+        {
+          "fields": [
+            {
+              "name": "accountNumber",
+              "type": "string"
+            },
+            {
+              "name": "balances",
+              "type": {
+                "fields": [
+                  {
+                    "name": "available",
+                    "type": {
+                      "fields": [
+                        {
+                          "name": "amount",
+                          "type": "string"
+                        },
+                        {
+                          "name": "currency",
+                          "type": "string"
+                        },
+                        {
+                          "name": "latestChange",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      ],
+                      "name": "BalanceAvro",
+                      "type": "record"
+                    }
+                  },
+                  {
+                    "name": "interest",
+                    "type": "BalanceAvro"
+                  },
+                  {
+                    "name": "overdraft",
+                    "type": "BalanceAvro"
+                  },
+                  {
+                    "name": "total",
+                    "type": "BalanceAvro"
+                  }
+                ],
+                "name": "MainAccountBalancesAvro",
+                "type": "record"
+              }
+            },
+            {
+              "name": "interestRate",
+              "type": "string"
+            }
+          ],
+          "name": "MainAccountAvro",
+          "type": "record"
+        },
+        "null"
+      ],
+      "default": null
+    },
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "ownerId",
+      "type": {
+        "logicalType": "UUID",
+        "type": "string"
+      }
+    },
+    {
+      "name": "savingAccount",
+      "type": [
+        {
+          "fields": [
+            {
+              "name": "additionalInterestRate",
+              "type": "string"
+            },
+            {
+              "name": "balances",
+              "type": {
+                "fields": [
+                  {
+                    "name": "expectedProfit",
+                    "type": "BalanceAvro"
+                  },
+                  {
+                    "name": "lostIfUnlocked",
+                    "type": "BalanceAvro"
+                  },
+                  {
+                    "name": "total",
+                    "type": "BalanceAvro"
+                  }
+                ],
+                "name": "SavingAccountBalancesAvro",
+                "type": "record"
+              }
+            },
+            {
+              "name": "pictureLink",
+              "type": "string"
+            },
+            {
+              "name": "interestRate",
+              "type": "string"
+            },
+            {
+              "name": "lockedDetails",
+              "type": [
+                {
+                  "fields": [
+                    {
+                      "name": "autoRenewal",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "lockDate",
+                      "type": "string"
+                    },
+                    {
+                      "name": "tenureMonths",
+                      "type": "string"
+                    }
+                  ],
+                  "name": "LockedDetailsAvro",
+                  "type": "record"
+                },
+                "null"
+              ]
+            },
+            {
+              "name": "targetAmount",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "name": "unlockedDetails",
+              "type": [
+                {
+                  "fields": [
+                    {
+                      "name": "targetDate",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  ],
+                  "name": "UnlockedDetailsAvro",
+                  "type": "record"
+                },
+                "null"
+              ]
+            }
+          ],
+          "name": "SavingAccountAvro",
+          "type": "record"
+        },
+        "null"
+      ]
+    },
+    {
+      "name": "updatedAt",
+      "type": "string"
+    }
+  ],
+  "name": "AccountUpdateAvro",
+  "namespace": "ph.safibank.avro.account",
+  "type": "record"
+}
