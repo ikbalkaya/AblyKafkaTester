@@ -5,19 +5,15 @@ import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import java.io.File
 import kotlin.test.assertEquals
 
 class SimpleProducerTest {
     @Test
     fun testProducerSentMessagesReceivedExactlyInTheSameOrder() = runBlocking {
-        val schemaContent = SimpleProducerTest::class.java.getResource("/garage_schema.json").readText()
-
-        val json = Gson().toJson(createGarage())
-        println(json)
-        val messagePrefix = "Hi there x"
-        val messageCount = 10
-        val topicName = "topic2"
+        val schemaContent = SimpleProducerTest::class.java.getResource("/timestamp_schema.avsc").readText()
+        val schemaValueContent = SimpleProducerTest::class.java.getResource("/timestamp_schema.avsc").readText()
+       
+        val topicName = "topic-customer"
         val delay = 100L
         val job = launch {
             listenToMessages(listOf(topicName)).collectIndexed { index, value ->
@@ -26,20 +22,20 @@ class SimpleProducerTest {
                 val messageString = message.toString(Charsets.UTF_8)*/
                 println(Gson().toJson(value))
                 println(value.data)
-             //  assertEquals(messageAtIndex(index, messagePrefix), messageString)
-                if (index == messageCount - 1) {
-                    println("All messages received")
-                    cancel()
-                }
+           
+               cancel()
+              
             }
         }
+        
         launch {
             delay(1000) //delay to allow subscriber to catch up
-            produce(topic = topicName,
-                messagePrefix = messagePrefix,
-                messageCount = messageCount,
+            produce(
+                topic = topicName,
+                message = schemaValueContent,
                 delay = delay,
-            schemaContent = schemaContent)
+                schemaContent = schemaContent
+            )
         }
 
         job.join()
@@ -78,17 +74,19 @@ class SimpleProducerTest {
         }
         launch {
             delay(1000) //delay to allow subscriber to catch up
-            produce(topic = topicName,
-                messagePrefix =  messagePrefix,
-                messageCount = messageCount,
-                delay = delay)
+            produce(
+                topic = topicName,
+                message =  messagePrefix,
+                delay = delay
+            )
         }
         launch {
             delay(900) //delay to allow subscriber to catch up
-            produce(topic = topicName2,
-                messagePrefix =  messagePrefix2,
-                messageCount = messageCount,
-                delay = delay)
+            produce(
+                topic = topicName2,
+                message =  messagePrefix2,
+                delay = delay
+            )
         }
 
         job.join()

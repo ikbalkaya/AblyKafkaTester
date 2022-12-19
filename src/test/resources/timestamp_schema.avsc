@@ -1,0 +1,43 @@
+{
+  "type": "record",
+  "name": "CustomerOnboardedEventV1",
+  "namespace": "ph.safibank.avro.customers",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "onboardedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "referralCode",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "firstName",
+      "type": "string"
+    },
+    {
+      "name": "middleName",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "lastName",
+      "type": "string"
+    }
+  ]
+}

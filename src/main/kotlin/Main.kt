@@ -6,6 +6,9 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import java.util.*
 import com.google.gson.Gson
+import io.ably.lib.rest.Auth
+import io.ably.lib.rest.Auth.TokenDetails
+import io.ably.lib.types.ClientOptions
 
 
 fun main(args: Array<String>) = runBlocking {
