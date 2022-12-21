@@ -11,7 +11,7 @@ class SimpleProducerTest {
     @Test
     fun testProducerSentMessagesReceivedExactlyInTheSameOrder() = runBlocking {
         val schemaContent = SimpleProducerTest::class.java.getResource("/timestamp_schema.avsc").readText()
-        val schemaValueContent = SimpleProducerTest::class.java.getResource("/timestamp_schema.avsc").readText()
+        val schemaValueContent = SimpleProducerTest::class.java.getResource("/timestamp_schema_value.json").readText()
        
         val topicName = "topic-customer"
         val delay = 100L

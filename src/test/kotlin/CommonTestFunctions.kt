@@ -40,9 +40,11 @@ suspend fun produce(
         delay(delay)
         schemaContent?.let {
             val avroSchemaRecord = createRecordWithSchema(schemaContent = it, key, topic, message, schemaUrl = "http://0.0.0.0:8081")
-            producer.send(avroSchemaRecord)
-        } ?: run {
-            //    producer.send(record)
+           repeat(10){
+               producer.send(avroSchemaRecord)
+               delay(1000)
+           }
+           
         }
 
     } catch (e: Exception) {
