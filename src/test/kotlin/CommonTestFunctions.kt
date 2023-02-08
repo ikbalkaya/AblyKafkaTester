@@ -121,7 +121,7 @@ fun createRecordWithSchema(
 ): ProducerRecord<Any, Any> {
     val parser: Schema.Parser = Schema.Parser()
     val schema = parser.parse(schemaContent)
-    registerSchema(schema, schemaUrl, subject = "subject-$topic")
+    registerSchema(schema, schemaUrl, subject = "subject:$topic")
 
     val avroRecord = buildAvroRecord(schema, message)
     val record = ProducerRecord<Any, Any>(topic, key, avroRecord)
@@ -156,7 +156,7 @@ private fun buildSimpleRecord(avroRecord: GenericRecord, message: String) {
 fun registerSchema(schema: Schema, schemaUrl: String, subject: String = "schemas") {
 
     val client = CachedSchemaRegistryClient(schemaUrl, 20)
-    client.register(subject,schema)
+   client.register(subject,schema)
 }
 
 data class Garage(val cars: List<Car>)

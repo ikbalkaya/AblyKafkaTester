@@ -13,7 +13,8 @@
     {
       "name": "onboardedAt",
       "type": {
-        "type": "long"
+        "type": "long",
+        "logicalType": "time-millis"
       }
     },
     {
@@ -37,6 +38,15 @@
     {
       "name": "lastName",
       "type": "string"
+    },
+    {
+      "name": "amount",
+      "type": {
+        "type": "bytes",
+        "logicalType": "decimal",
+        "precision": 4,
+        "scale": 2
+      }
     }
   ]
 }
