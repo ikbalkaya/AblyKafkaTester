@@ -1,18 +1,23 @@
 import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.apache.avro.data.Json
 import org.junit.Test
 import kotlin.test.assertEquals
 
 class SimpleProducerTest {
     @Test
     fun testProducerSentMessagesReceivedExactlyInTheSameOrder() = runBlocking {
-        val schemaContent = SimpleProducerTest::class.java.getResource("/timestamp_schema.avsc").readText()
-        val schemaValueContent = SimpleProducerTest::class.java.getResource("/timestamp_schema_value.json").readText()
-       
+        val schemaContent = SimpleProducerTest::class.java.getResource("/avro_mixed_schema.avsc").readText()
+        val schemaValueContent = SimpleProducerTest::class.java.getResource("/avro_data_with_mixed_logical_values.json").readText()
+
+        val expected = JsonParser.parseString(schemaValueContent)
+
         val topicName = "topic-customer"
         val delay = 100L
         val job = launch {
@@ -20,9 +25,9 @@ class SimpleProducerTest {
               /* val message = value.data as ByteArray
               
                 val messageString = message.toString(Charsets.UTF_8)*/
-                println(Gson().toJson(value))
-                println(value.data)
-           
+                val messageJson = value.data as JsonObject
+                val element = JsonParser.parseString(messageJson.toString())
+                assertEquals(expected,element)
                cancel()
               
             }
